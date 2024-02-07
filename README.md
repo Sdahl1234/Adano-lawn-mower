@@ -1,3 +1,26 @@
 # Adano lawn mower integration for Home Assistant
+Home assistant integration from lawnmower using the robotic-mower connect APP.
 
-Description later
+## Tested models
+  - Adano RM6
+## Notes
+  - It ONLY work if you have only one mower in the APP
+
+## Install
+#### Manually
+In Home Assistant, create a folder under *custom_components* named *adano* and copy all the content of this project to that folder.
+Restart Home Assistant and go to *Devices and Services* and press *+Add integration*.
+Search for *Adano robotic mower* and add it.
+#### HACS Custom Repository
+In HACS, add a custom repository and use https://github.com/Sdahl1234/Adano-lawn-mower
+Download from HACS.
+Restart Home Assistant and go to *Devices and Services* and press *+Add integration*.
+Search for *Adano robotic mower* and add it.
+
+## Configuration
+You must now choose a name for the device. Email and password for the robotic-mower connect APP.
+
+## Update all sensors
+You have to turn off your mower and turn on again while the integration is running if you want all the sensors to update.
+
+More description later

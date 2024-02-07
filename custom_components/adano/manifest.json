@@ -1,9 +1,10 @@
 {
   "domain": "adano",
   "name": "Adano robotic mower",
-  "documentation": "https://github.com/sdahl/adano",
+  "documentation": "https://github.com/Sdahl1234/Adano-lawn-mower",
+  "issue_tracker": "https://github.com/Sdahl1234/Adano-lawn-mower/issues",
   "requirements": ["requests", "paho-mqtt"],
-  "codeowners": [],
+  "codeowners": ["@Sdahl1234"],
   "integration_type": "device",
   "config_flow": true,
   "version": "0.0.1"

@@ -1,0 +1,119 @@
+{
+	"config": {
+		"abort": {
+			"already_configured": "Kontoen findes i forvejen"
+		},
+		"error": {
+			"connection_error": "Kunne ikke forbinde"
+		},
+		"step": {
+			"user": {
+				"data": {
+					"name": "Navn",
+					"email": "E-mail",
+					"password": "Password"
+				}
+			}
+		}
+	},
+	"entity": {
+		"sensor": {
+			"test": {"name": "dansk"},
+			"adano_mower_state": {
+				"name": "Robot status",
+				"state": {
+					"Standby": "Standby",
+					"Mowing": "Arbejder",
+					"On the way home": "På vej hjem",
+					"Charging": "Oplader",
+					"Mowing border": "Klipper kant",
+					"Unknown": "Ukendt"
+				}
+			},
+			"adano_battery": {
+				"name": "Batteri"
+			},
+			"adano_rain_delay_set": {
+				"name": "Regn sensor forsinkelse"
+			},
+			"adano_sensor_counter": {
+				"name": "Regn sensor nedtæller"
+			},
+			"adano_mowing_time": {
+				"name": "Aktuel arbejdstid"
+			},
+			"adano_error": {
+				"name": "Fejlkode"
+			},
+			"adano_error_text": {
+				"name": "Fejl"
+			},
+			"adano_wifi_level": {
+				"name": "Wifi styrke"
+			},
+            "adano_rain_status": {
+				"name": "Regn sensor",
+				"state": {
+					"Dry": "Tør",
+					"Dry countdown": "Tør nedtæller",
+					"Wet": "Våd",
+					"Unknown": "Ukendt"
+				}
+			},
+			"adanozone1": {
+				"name": "Zone 1 start"
+			},
+			"adanozone2": {
+				"name": "Zone 2 start"
+			},
+			"adanozone3": {
+				"name": "Zone 3 start"
+			},
+			"adanozone4": {
+				"name": "Zone 4 start"
+			},
+			"adano_schedule": {
+				"name": "Tidsstyrring"
+			}
+		},
+		"binary_sensor": {
+			"adano_dock": {
+				"name": "Dock",
+				"state": {
+					"Away": "Ude",
+					"Home": "Hjemme",
+					"Unknown": "Ukendt"
+				}
+			},
+			"adano_rain_sensor_active": {
+				"name": "Regn sensor aktiv"
+			},
+			"adano_multizone": {
+				"name": "Multizone"
+			},
+			"adano_multizoneauto": {
+				"name": "Multizone auto"
+			},
+			"adano_online": {
+				"name": "Online",
+				"state": {
+					"Connected": "Forbundet",
+					"Disconnected": "Frakoblet",
+					"Unknown": "Ukendt"
+				}
+			}
+		},
+		"lawn_mower": {
+			"adano_lawnmower": {
+                "state": {
+					"Standby": "Standby",
+					"Mowing": "Arbejder",
+					"On the way home": "På vej hjem",
+					"Charging": "Oplader",
+					"Mowing border": "Klipper kant",
+					"Unknown": "Ukendt"
+				}
+			}
+		}
+	}
+}

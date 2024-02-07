@@ -1,0 +1,10 @@
+{
+  "domain": "adano",
+  "name": "Adano robotic mower",
+  "documentation": "https://github.com/sdahl/adano",
+  "requirements": ["requests", "paho-mqtt"],
+  "codeowners": [],
+  "integration_type": "device",
+  "config_flow": true,
+  "version": "0.0.1"
+}

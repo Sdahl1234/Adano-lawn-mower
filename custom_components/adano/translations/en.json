@@ -1,0 +1,119 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Account is already configured"
+        },
+        "error": {
+            "connection_error": "Failed to connect"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "name": "Name",
+                    "email": "E-mail",
+                    "password": "Password"
+                }
+            }
+        }
+    },
+    "entity": {
+      "sensor": {
+        "test": {"name": "Engelsk"},
+        "adano_mower_state": {
+          "name": "Mower status",
+          "state": {
+            "Standby": "Standby",
+            "Mowing": "Mowing",
+            "On the way home": "Going home",
+            "Charging": "Charging",
+            "Mowing border": "Border",
+            "Unknown": "Unknown"
+          }
+        },
+        "adano_battery": {
+          "name": "Battery"
+        },
+        "adano_rain_delay_set": {
+          "name": "Rain sensor delay"
+        },
+        "adano_sensor_counter": {
+          "name": "Rain sensor countdown"
+        },
+        "adano_mowing_time": {
+          "name": "Actual mowingtime"
+        },
+        "adano_error": {
+          "name": "ErrorCode"
+        },
+        "adano_error_text": {
+          "name": "Error"
+        },
+        "adano_wifi_level": {
+          "name": "Wifi strength"
+        },
+              "adano_rain_status": {
+          "name": "Rain sensor",
+          "state": {
+            "Dry": "Dry",
+            "Dry countdown": "Dry countdownr",
+            "Wet": "Wet",
+            "Unknown": "Unknown"
+          }
+        },
+        "adanozone1": {
+          "name": "Zone 1 start"
+        },
+        "adanozone2": {
+          "name": "Zone 2 start"
+        },
+        "adanozone3": {
+          "name": "Zone 3 start"
+        },
+        "adanozone4": {
+          "name": "Zone 4 start"
+        }
+      },
+      "binary_sensor": {
+        "adano_dock": {
+          "name": "Dock",
+          "state": {
+            "Away": "Away",
+            "Home": "Home",
+            "Unknown": "Unknown"
+          }
+        },
+        "adano_rain_sensor_active": {
+          "name": "Rain sensor active"
+        },
+        "adano_multizone": {
+          "name": "Multizone"
+        },
+        "adano_multizoneauto": {
+          "name": "Multizone auto"
+        },
+        "adano_schedule": {
+          "name": "Schedule"
+        },
+        "adano_online": {
+          "name": "Online",
+          "state": {
+            "Connected": "Connected",
+            "Disconnected": "Disconnected",
+            "Unknown": "Unknown"
+          }
+        }
+      },
+      "lawn_mower": {
+        "adano_lawnmower": {
+          "state": {
+            "Standby": "Standby",
+            "Mowing": "Mowing",
+            "On the way home": "Going home",
+            "Charging": "Charging",
+            "Mowing border": "Border",
+            "Unknown": "Unknown"
+          }
+        }
+      }
+    }
+  }

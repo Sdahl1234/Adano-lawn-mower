@@ -2,7 +2,8 @@
 
 SERIAL_NO = "serial_no"
 DOMAIN = "adano"
-
+ROBOTS = "robots"
+DH = "dh"
 
 ADANO_STANDBY = "Standby"
 ADANO_MOWING = "Mowing"

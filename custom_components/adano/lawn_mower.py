@@ -12,14 +12,9 @@ from homeassistant.components.lawn_mower import (
     LawnMowerEntity,
     LawnMowerEntityFeature,
 )
-
-# from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-# from homeassistant.helpers.entity import Entity, EntityDescription
-# from homeassistant.helpers.entity_component import EntityComponent
-# from homeassistant.helpers.typing import ConfigType
-from . import AdanoDataCoordinator
+from . import AdanoDataCoordinator, robot_coordinators
 from .const import (
     ADANO_CHARGING,
     ADANO_GOING_HOME,
@@ -27,7 +22,6 @@ from .const import (
     ADANO_MOWING_BORDER,
     ADANO_STANDBY,
     ADANO_UNKNOWN,
-    DOMAIN,
 )
 from .entity import AdanoEntity
 
@@ -36,7 +30,10 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> None:
     """Do setup entry."""
-    async_add_entities([AdanoLawnMower(hass.data[DOMAIN][entry.entry_id])])
+
+    async_add_entities(
+        [AdanoLawnMower(coordinator) for coordinator in robot_coordinators(hass, entry)]
+    )
 
 
 class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
@@ -47,7 +44,8 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
         super().__init__(coordinator)
         self.coordinator = coordinator
         self._data_handler = self.coordinator.data_handler
-        self._name = self._data_handler.DeviceName
+        self._sn = self.coordinator._devicesn
+        self._name = self._data_handler.get_device(self._sn).DeviceName
 
     @property
     def translation_key(self) -> str:
@@ -66,7 +64,7 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
     @property
     def unique_id(self):
         """Return a unique ID."""
-        return f"adano_lawnmower.{self._data_handler.DeviceName}"
+        return f"adano_lawnmower.{self._name}.{self.coordinator.dsn}"
 
     @property
     def name(self):
@@ -81,15 +79,17 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
     @property
     def state(self) -> str | None:
         """Return the current state."""
-        if self._data_handler.errortype != 0:
+        if self._data_handler.get_device(self._sn).errortype != 0:
             return (
                 "Fejl: "
-                + self._data_handler.faultStatusName
+                + self._data_handler.get_device(self._sn)
+                .devicedata["data"]
+                .get("faultStatusName")
                 + " ("
-                + str(self._data_handler.errortype)
+                + str(self._data_handler.get_device(self._sn).errortype)
                 + ")"
             )
-        ival = self._data_handler.mode
+        ival = self._data_handler.get_device(self._sn).mode
         if ival == 0:
             val = ADANO_STANDBY
         elif ival == 1:
@@ -108,15 +108,17 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
 
     async def async_start_mowing(self) -> None:
         """Start or resume mowing."""
-        await self.hass.async_add_executor_job(self._data_handler.start_mowing)
+        await self.hass.async_add_executor_job(
+            self._data_handler.start_mowing, self._sn
+        )
 
     async def async_dock(self) -> None:
         """Dock the mower."""
-        await self.hass.async_add_executor_job(self._data_handler.dock)
+        await self.hass.async_add_executor_job(self._data_handler.dock, self._sn)
 
     async def async_pause(self) -> None:
         """Pause the lawn mower."""
-        await self.hass.async_add_executor_job(self._data_handler.pause)
+        await self.hass.async_add_executor_job(self._data_handler.pause, self._sn)
 
     async def async_update(self):
         """Get the latest data."""

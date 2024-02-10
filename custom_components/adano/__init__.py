@@ -1,19 +1,16 @@
 """Adano mower integration."""
+import asyncio
 from datetime import timedelta
 import logging
-
-import async_timeout  # noqa: TID251
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
-
-# from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .adano import AdanoRoboticmower
-from .const import DOMAIN
+from .const import DH, DOMAIN, ROBOTS
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
@@ -22,6 +19,12 @@ PLATFORMS = [
 ]
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def robot_coordinators(hass: HomeAssistant, entry: ConfigEntry):
+    """Help with entity setup."""
+    coordinators: list[AdanoDataCoordinator] = hass.data[DOMAIN][entry.entry_id][ROBOTS]
+    yield from coordinators
 
 
 async def async_setup(hass: HomeAssistant, config):  # noqa: D103
@@ -35,12 +38,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     data_handler = AdanoRoboticmower(email, password)
     await hass.async_add_executor_job(data_handler.on_load)
-    data_coordinator = AdanoDataCoordinator(hass, data_handler)
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {DH: data_handler}
 
-    if DOMAIN not in hass.data:
-        hass.data[DOMAIN] = {}
+    # robot = [1, 2]
+    robot = data_handler.deviceArray
+    robots = [AdanoDataCoordinator(hass, data_handler, devicesn) for devicesn in robot]
 
-    hass.data[DOMAIN][entry.entry_id] = data_coordinator
+    await asyncio.gather(
+        *[coordinator.async_config_entry_first_refresh() for coordinator in robots]
+    )
+
+    hass.data[DOMAIN][entry.entry_id][ROBOTS] = robots
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -66,7 +74,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     config_entry: ConfigEntry
 
-    def __init__(self, hass: HomeAssistant, data_handler) -> None:
+    def __init__(
+        self, hass: HomeAssistant, data_handler: AdanoRoboticmower, devicesn
+    ) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
@@ -77,6 +87,12 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
             update_interval=timedelta(seconds=5),  # 60 * 60),
         )
         self.data_handler = data_handler
+        self._devicesn = devicesn
+
+    @property
+    def dsn(self):
+        """DeviceSerialNumber."""
+        return self._devicesn
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -85,36 +101,39 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
             identifiers={
                 (DOMAIN, self.unique_id),
             },
-            model=self.data_handler.DeviceModel,
+            model=self.data_handler.get_device(self._devicesn).DeviceModel,
             manufacturer="Adano Robotic Mower",
-            serial_number=self.data_handler.DeviceSn,
-            name=self.data_handler.DeviceName,
-            sw_version=self.data_handler.DeviceSW,
-            hw_version=self.data_handler.DeviceHW,
+            serial_number=self._devicesn,
+            name=self.data_handler.get_device(self._devicesn).DeviceName,
+            sw_version=self.data_handler.get_device(self._devicesn)
+            .devicedata["data"]
+            .get("bbSv"),
+            hw_version=self.data_handler.get_device(self._devicesn)
+            .devicedata["data"]
+            .get("bbHv"),
         )
 
     @property
     def unique_id(self) -> str:
         """Return the system descriptor."""
-        entry = self.config_entry
-        if entry.unique_id:
-            return entry.unique_id
-        assert entry.entry_id
-        return entry.entry_id
+        return f"{DOMAIN}-{self._devicesn}"
+
+    def update_device(self):
+        """Update device."""
+        self.data_handler.update_devices(self._devicesn)
 
     async def _async_update_data(self):
         _LOGGER.debug("_async_update_data")
 
-        if self.data_handler.forceupdate:
-            self.data_handler.forceupdate = False
+        if self.data_handler.get_device(self._devicesn).forceupdate:
+            self.data_handler.get_device(self._devicesn).forceupdate = False
             try:
-                await self.hass.async_add_executor_job(self.data_handler.update_devices)
-            except Exception as ex:
+                await self.hass.async_add_executor_job(self.update_device)
+            except Exception as ex:  # pylint: disable=broad-except
                 _LOGGER.debug(f"forced updated failed: {ex}")  # noqa: G004
         else:
             try:
-                async with async_timeout.timeout(100):
-                    await self.data_handler.update()
-                    return self.data_handler
-            except Exception as ex:
-                _LOGGER.debug(f"_async_update timed out: {ex}")  # noqa: G004
+                await self.hass.async_add_executor_job(self.data_handler.update)
+                return self.data_handler
+            except Exception as ex:  # pylint: disable=broad-except
+                _LOGGER.debug(f"update failed: {ex}")  # noqa: G004

@@ -7,5 +7,5 @@
   "codeowners": ["@Sdahl1234"],
   "integration_type": "device",
   "config_flow": true,
-  "version": "0.0.1"
+  "version": "1.0.0"
 }

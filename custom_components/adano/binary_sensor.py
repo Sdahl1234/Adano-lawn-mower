@@ -1,5 +1,4 @@
 """Sensor."""
-# from homeassistant.components.sensor import BinarySensorEntity, SensorDeviceClass
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -7,19 +6,12 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.core import HomeAssistant
 
-# from homeassistant.helpers.update_coordinator import (
-#    CoordinatorEntity,
-#    DataUpdateCoordinator,
-#    UpdateFailed,
-# )
-from . import AdanoDataCoordinator
-from .const import DOMAIN
+from . import AdanoDataCoordinator, robot_coordinators
 from .entity import AdanoEntity
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Async Setup entry."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_devices(
         [
@@ -33,6 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "",
                 "adano_dock",
             )
+            for coordinator in robot_coordinators(hass, entry)
         ]
     )
 
@@ -48,6 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "mdi:weather-pouring",
                 "adano_rain_sensor_active",
             )
+            for coordinator in robot_coordinators(hass, entry)
         ]
     )
 
@@ -63,6 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "",
                 "adano_multizone",
             )
+            for coordinator in robot_coordinators(hass, entry)
         ]
     )
 
@@ -78,6 +73,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "",
                 "adano_multizoneauto",
             )
+            for coordinator in robot_coordinators(hass, entry)
         ]
     )
 
@@ -93,6 +89,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "mdi:wifi",
                 "adano_online",
             )
+            for coordinator in robot_coordinators(hass, entry)
         ]
     )
 
@@ -123,15 +120,8 @@ class AdanoBinarySensor(AdanoEntity, BinarySensorEntity):
         self._icon = icon
         self._attr_has_entity_name = True
         self._attr_translation_key = translationkey
-        self._attr_unique_id = self._name
-
-        # self.translation_key = translationkey
-        # self._attr_has_entity_name = True
-
-    # @property
-    # def name(self):
-    #    """Return the name of the sensor."""
-    #    return self._name
+        self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"
+        self._sn = self.coordinator._devicesn
 
     # This property is important to let HA know if this entity is online or not.
     # If an entity is offline (return False), the UI will reflect this.
@@ -140,35 +130,22 @@ class AdanoBinarySensor(AdanoEntity, BinarySensorEntity):
         """Return True if roller and hub is available."""
         return True  # self._data_handler.is_online
 
-    # @property
-    # def unique_id(self):
-    #    """Return a unique ID."""
-    #    # return "adano_Adano_adano"
-    #    return f"{self._name}_{self._source}_{self._valuepair}"
-
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
         if self._valuepair == "Station":
-            return self._data_handler.station
+            return self._data_handler.get_device(self._sn).station
         elif self._valuepair == "rain_en":
-            return self._data_handler.rain_en
+            return self._data_handler.get_device(self._sn).rain_en
         elif self._valuepair == "mul_en":
-            return self._data_handler.mul_en
+            return self._data_handler.get_device(self._sn).mul_en
         elif self._valuepair == "mul_auto":
-            return self._data_handler.mul_auto
+            return self._data_handler.get_device(self._sn).mul_auto
         elif self._valuepair == "deviceOnlineFlag":
-            return self._data_handler.deviceOnlineFlag == '{"online":"1"}'
-
-    # @property
-    # def device_class(self):
-    #    """Return the class of this device."""
-    #    return self._attr_device_class
-
-    # @property
-    # def entity_category(self):
-    #    """Return the entity category of this device."""
-    #    return ATTRIB_TO_ENTTIY_CATEGORY.get(self._attribute)
+            return (
+                self._data_handler.get_device(self._sn).deviceOnlineFlag
+                == '{"online":"1"}'
+            )
 
     @property
     def icon(self):

@@ -61,7 +61,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 unique_id = f"{name}"
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
-
                 return self.async_create_entry(
                     title=unique_id,
                     data={
@@ -85,6 +84,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=DATA_SCHEMA,
             errors=errors,
         )
+
+    # async def async_step_select_mower(self):
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):

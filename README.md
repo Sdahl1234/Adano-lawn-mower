@@ -3,8 +3,6 @@ Home assistant integration from lawnmower using the robotic-mower connect APP.
 
 ## Tested models
   - Adano RM6
-## Notes
-  - It ONLY work if you have only one mower in the APP
 
 ## Install
 #### Manually

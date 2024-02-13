@@ -18,7 +18,9 @@ Search for *Adano robotic mower* and add it.
 ## Configuration
 You must now choose a name for the device. Email and password for the robotic-mower connect APP.
 
-## Update all sensors
-You have to turn off your mower and turn on again while the integration is running if you want all the sensors to update.
+## Update of sensors
+If the mower is turne off you will only reveive a minimum of updates.
+Sensors are updated as they are presented by the mqtt server. You can turn off your mower and turn it on again while the integration is running to get the most of the sensors updated.
+
 
 More description later

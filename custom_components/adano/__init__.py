@@ -123,17 +123,10 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
         self.data_handler.update_devices(self._devicesn)
 
     async def _async_update_data(self):
-        _LOGGER.debug("_async_update_data")
+        # _LOGGER.debug("_async_update_data")
 
-        if self.data_handler.get_device(self._devicesn).forceupdate:
-            self.data_handler.get_device(self._devicesn).forceupdate = False
-            try:
-                await self.hass.async_add_executor_job(self.update_device)
-            except Exception as ex:  # pylint: disable=broad-except
-                _LOGGER.debug(f"forced updated failed: {ex}")  # noqa: G004
-        else:
-            try:
-                await self.hass.async_add_executor_job(self.data_handler.update)
-                return self.data_handler
-            except Exception as ex:  # pylint: disable=broad-except
-                _LOGGER.debug(f"update failed: {ex}")  # noqa: G004
+        try:
+            await self.hass.async_add_executor_job(self.data_handler.update)
+            return self.data_handler
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.debug(f"update failed: {ex}")  # noqa: G004

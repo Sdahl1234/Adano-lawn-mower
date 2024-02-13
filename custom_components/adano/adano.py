@@ -81,7 +81,7 @@ class AdanoRoboticmower:
 
     def update(self):
         """Force HA to update sensors."""
-        _LOGGER.debug("Force update")
+        # _LOGGER.debug("Force update")
 
     def on_load(self):
         """Init the robots."""
@@ -192,12 +192,18 @@ class AdanoRoboticmower:
                 if "mode" in data:
                     device.mode = data.get("mode")
                     if "errortype" in data:
+                        if device.errortype != data.get("errortype"):
+                            device.forceupdate = True
                         device.errortype = data.get("errortype")
-                        device.forceupdate = True
                     else:
                         if device.errortype != 0:
                             device.forceupdate = True
                         device.errortype = 0
+
+                    if device.forceupdate:
+                        device.forceupdate = False
+                        update_timer = Timer(10, self.update_devices, [devicesn])
+                        update_timer.start()
                 if "station" in data:
                     device.station = data.get("station")
                 if "wifi_lv" in data:
@@ -457,6 +463,5 @@ class AdanoRoboticmower:
             if hasattr(error, "response"):
                 _LOGGER.debug(json.dumps(error.response.json()))
 
-        # self.get_device(devicesn).forceupdate = True
         refresh_timeout = Timer(10, self.update_devices, [devicesn])
         refresh_timeout.start()

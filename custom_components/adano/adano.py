@@ -2,6 +2,7 @@
 import json
 import logging
 from threading import Timer
+import time
 import uuid
 
 import paho.mqtt.client as mqtt
@@ -37,29 +38,104 @@ class AdanoDevice:
         self.mul_zon2 = 0
         self.mul_zon3 = 0
         self.mul_zon4 = 0
-        self.Thu = {}
-        self.Tue = {}
-        self.Wed = {}
-        self.Sat = {}
-        self.Fri = {}
-        self.Sun = {}
-        self.Mon = {}
         self.forceupdate = False
+        self.error_text = ""
 
         self.DeviceModel = ""
         self.DeviceName = ""
         self.DeviceBluetooth = ""
-        # self.DeviceSW = ""
-        # self.DeviceHW = ""
-        # self.faultStatusName = ""
+        self.Schedule: AdanoSchedule = AdanoSchedule()
+
+    def updateschedule(self) -> None:
+        """Refresh schedule from settings."""
+        for dsl in self.settings["data"]["deviceScheduleList"]:
+            daynumber = dsl.get("dayOfWeek")
+            day = self.Schedule.GetDay(daynumber)
+            day.start = dsl.get("startAt")[0:5]
+            day.end = dsl.get("endAt")[0:5]
+            day.trim = dsl.get("trimFlag")
+
+    def InitValues(self) -> None:
+        """Init values at upstart."""
+        self.power = self.devicedata["data"].get("electricity")
+        self.mode = int(self.devicedata["data"].get("workStatusCode"))
+        self.station = self.devicedata["data"].get("stationFlag")
+        self.rain_en = self.devicedata["data"].get("rainFlag")
+        self.rain_delay_set = int(self.devicedata["data"].get("rainDelayDuration"))
+        self.rain_delay_left = self.devicedata["data"].get("rainDelayLeft")
+        self.deviceOnlineFlag = self.devicedata["data"].get("onlineFlag")
+        self.zoneOpenFlag = self.settings["data"].get("zoneOpenFlag")
+        self.mul_en = self.settings["data"].get("zoneOpenFlag")
+        self.mul_auto = self.settings["data"].get("zoneAutomaticFlag")
+        self.mul_zon1 = self.settings["data"].get("zoneFirstPercentage")
+        self.mul_zon2 = self.settings["data"].get("zoneSecondPercentage")
+        self.mul_zon3 = self.settings["data"].get("zoneThirdPercentage")
+        self.mul_zon4 = self.settings["data"].get("zoneFourthPercentage")
+        self.updateschedule()
+
+
+class AdanoScheduleDay:
+    """Day."""
+
+    def __init__(self, day: int) -> None:
+        """Init."""
+        self.mqtt_day = {}
+        self.day = day
+        self.start: str = "00:00"
+        self.end: str = "00:00"
+        self.trim: bool = False
+
+    def Update(self) -> None:
+        """Update from settings."""
+
+
+class AdanoSchedule:
+    """Adano schedule."""
+
+    def __init__(self) -> None:
+        """Init."""
+        self.days = []
+        for x in range(1, 8):
+            self.days.append(AdanoScheduleDay(x))
+
+    def GetDay(self, daynumber: int) -> AdanoScheduleDay:
+        """Get the day."""
+        for day in self.days:
+            if day.day == daynumber:
+                return day
+
+    def UpdateFromMqtt(self, data, daynumber: int) -> None:
+        """From mqtt."""
+        self.GetDay(daynumber).mqtt_day = data
+        asc: AdanoScheduleDay = self.GetDay(daynumber)
+        if len(data) > 0:
+            Start = None
+            End = None
+            Trimming = None
+            for key, value in data.items():
+                if key == "slice":
+                    for a in value[0].items():
+                        if a[0] == "start":
+                            Start = a[1]
+                        if a[0] == "end":
+                            End = a[1]
+                if key == "Trimming":
+                    Trimming = value
+            if Start is not None:
+                asc.start = time.strftime("%H:%M", time.gmtime(int(Start) * 60))[0:5]
+            if End is not None:
+                asc.end = time.strftime("%H:%M", time.gmtime(int(End) * 60))[0:5]
+            if Trimming is not None:
+                asc.trim = Trimming
 
 
 class AdanoRoboticmower:
     """AdanoRobot class."""
 
-    def __init__(self, email, password) -> None:
+    def __init__(self, email, password, language) -> None:
         """Init function."""
 
+        self.language = language
         self.username = email
         self.password = password
         self.deviceArray = []
@@ -104,6 +180,7 @@ class AdanoRoboticmower:
                 self.get_settings(device_sn)
             for device_sn in self.deviceArray:
                 self.update_devices(device_sn)
+                self.get_device(device_sn).InitValues()
             self.connect_mqtt()
 
         self.refresh_token_interval = Timer(
@@ -117,7 +194,7 @@ class AdanoRoboticmower:
             response = requests.post(
                 url="http://server.sk-robot.com/api/auth/oauth/token",
                 headers={
-                    "Accept-Language": "da",
+                    "Accept-Language": self.language,
                     "Authorization": "Basic YXBwOmFwcA==",
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Connection": "Keep-Alive",
@@ -178,7 +255,7 @@ class AdanoRoboticmower:
         )
         _LOGGER.debug("MQTT subscribe ok")
 
-    def on_mqtt_message(self, client, userdata, message):
+    def on_mqtt_message(self, client, userdata, message):  # noqa: C901
         """On mqtt message."""
         _LOGGER.debug("MQTT message: " + message.topic + " " + message.payload.decode())  # noqa: G003
         try:
@@ -235,19 +312,19 @@ class AdanoRoboticmower:
                 if "mul_zon4" in data:
                     device.mul_zon4 = data.get("mul_zon4")
                 if "Mon" in data:
-                    device.Mon = data.get("Mon")
+                    device.Schedule.UpdateFromMqtt(data.get("Mon"), 1)
                 if "Tue" in data:
-                    device.Tue = data.get("Tue")
+                    device.Schedule.UpdateFromMqtt(data.get("Tue"), 2)
                 if "Wed" in data:
-                    device.Wed = data.get("Wed")
+                    device.Schedule.UpdateFromMqtt(data.get("Wed"), 3)
                 if "Thu" in data:
-                    device.Thu = data.get("Thu")
+                    device.Schedule.UpdateFromMqtt(data.get("Thu"), 4)
                 if "Fri" in data:
-                    device.Fri = data.get("Fri")
+                    device.Schedule.UpdateFromMqtt(data.get("Fri"), 5)
                 if "Sat" in data:
-                    device.Sat = data.get("Sat")
+                    device.Schedule.UpdateFromMqtt(data.get("Sat"), 6)
                 if "Sun" in data:
-                    device.Sun = data.get("Sun")
+                    device.Schedule.UpdateFromMqtt(data.get("Sun"), 7)
 
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
@@ -268,7 +345,7 @@ class AdanoRoboticmower:
                 url="http://server.sk-robot.com/api/mower/device-user/list",
                 headers={
                     "Content-Type": "application/json",
-                    "Accept-Language": "da",
+                    "Accept-Language": self.language,
                     "Authorization": "bearer " + self.session["access_token"],
                     "Host": "server.sk-robot.com",
                     "Connection": "Keep-Alive",
@@ -299,7 +376,7 @@ class AdanoRoboticmower:
             response = requests.get(
                 url=f"http://server.sk-robot.com/api/mower/device-setting/{snr}",
                 headers={
-                    "Accept-Language": "da",
+                    "Accept-Language": self.language,
                     "Authorization": "bearer " + self.session["access_token"],
                     "Host": "server.sk-robot.com",
                     "Connection": "Keep-Alive",
@@ -339,7 +416,7 @@ class AdanoRoboticmower:
                     method=element.get("method", "get"),
                     url=url,
                     headers={
-                        "Accept-Language": "da",
+                        "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],
                         "Host": "server.sk-robot.com",
                         "Connection": "Keep-Alive",
@@ -384,7 +461,7 @@ class AdanoRoboticmower:
             response = requests.post(
                 url="http://server.sk-robot.com/api/auth/oauth/token",
                 headers={
-                    "Accept-Language": "da",
+                    "Accept-Language": self.language,
                     "Authorization": "Basic YXBwOmFwcA==",
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Host": "server.sk-robot.com",
@@ -439,6 +516,215 @@ class AdanoRoboticmower:
         _LOGGER.debug("Refresh device data")
         self.update_devices(devicesn)
 
+    def set_schedule(
+        self,
+        ScheduleList: [],
+        devicesn,
+    ):
+        """Set schedule data."""
+        # time format: "23:30:00"
+        for day in ScheduleList:
+            if day.day == 1:
+                start1 = day.start
+                end1 = day.end
+                trim1 = day.trim
+            if day.day == 2:
+                start2 = day.start
+                end2 = day.end
+                trim2 = day.trim
+            if day.day == 3:
+                start3 = day.start
+                end3 = day.end
+                trim3 = day.trim
+            if day.day == 4:
+                start4 = day.start
+                end4 = day.end
+                trim4 = day.trim
+            if day.day == 5:
+                start5 = day.start
+                end5 = day.end
+                trim5 = day.trim
+            if day.day == 6:
+                start6 = day.start
+                end6 = day.end
+                trim6 = day.trim
+            if day.day == 7:
+                start7 = day.start
+                end7 = day.end
+                trim7 = day.trim
+
+        try:
+            data = {
+                "appId": self.session["user_id"],
+                "autoFlag": False,
+                "deviceScheduleBOS": [
+                    {
+                        "dayOfWeek": 1,
+                        "endAt": end1 + ":00",
+                        "startAt": start1 + ":00",
+                        "trimFlag": trim1,
+                    },
+                    {
+                        "dayOfWeek": 2,
+                        "endAt": end2 + ":00",
+                        "startAt": start2 + ":00",
+                        "trimFlag": trim2,
+                    },
+                    {
+                        "dayOfWeek": 3,
+                        "endAt": end3 + ":00",
+                        "startAt": start3 + ":00",
+                        "trimFlag": trim3,
+                    },
+                    {
+                        "dayOfWeek": 4,
+                        "endAt": end4 + ":00",
+                        "startAt": start4 + ":00",
+                        "trimFlag": trim4,
+                    },
+                    {
+                        "dayOfWeek": 5,
+                        "endAt": end5 + ":00",
+                        "startAt": start5 + ":00",
+                        "trimFlag": trim5,
+                    },
+                    {
+                        "dayOfWeek": 6,
+                        "endAt": end6 + ":00",
+                        "startAt": start6 + ":00",
+                        "trimFlag": trim6,
+                    },
+                    {
+                        "dayOfWeek": 7,
+                        "endAt": end7 + ":00",
+                        "startAt": start7 + ":00",
+                        "trimFlag": trim7,
+                    },
+                ],
+                "deviceSn": devicesn,
+            }
+            _LOGGER.debug(data)
+            response = requests.post(
+                url="http://server.sk-robot.com/api/app_mower/device-schedule/setScheduling",
+                headers={
+                    "Accept-Language": self.language,
+                    "Authorization": "bearer " + self.session["access_token"],
+                    "Content-Type": "application/json; charset=UTF-8",
+                    "Host": "server.sk-robot.com",
+                    "Connection": "Keep-Alive",
+                    "User-Agent": "okhttp/4.8.1",
+                    "Accept-Encoding": "gzip",
+                },
+                json=data,
+                timeout=10,
+            )
+            response_data = response.json()
+            _LOGGER.debug(json.dumps(response_data))
+            if response_data.get("ok") is False:
+                self.get_device(devicesn).error_text = response_data.get("msg")
+                _LOGGER.debug(response_data.get("msg"))
+            else:
+                self.get_device(devicesn).error_text = ""
+        except Exception as error:  # pylint: disable=broad-except
+            _LOGGER.debug(error)
+            if hasattr(error, "response"):
+                _LOGGER.debug(json.dumps(error.response.json()))
+
+    def set_zone_status(
+        self,
+        zoneauto: bool,
+        zone_enable: bool,
+        zone1: int,
+        zone2: int,
+        zone3: int,
+        zone4: int,
+        devicesn,
+    ):
+        """Set zone status."""
+        try:
+            data = {
+                "appId": self.session["user_id"],
+                "deviceSn": devicesn,
+                "meterFirst": 0,
+                "meterFour": 0,
+                "meterSecond": 0,
+                "meterThird": 0,
+                "proFirst": 25,
+                "proFour": 25,
+                "proSecond": 25,
+                "proThird": 25,
+                "zoneAutomaticFlag": zoneauto,
+                "zoneExFlag": 0,
+                "zoneFirstPercentage": zone1,
+                "zoneFourthPercentage": zone4,
+                "zoneOpenFlag": zone_enable,
+                "zoneSecondPercentage": zone2,
+                "zoneThirdPercentage": zone3,
+            }
+            _LOGGER.debug(data)
+            response = requests.post(
+                url="http://server.sk-robot.com/api/app_mower/device/setZones",
+                headers={
+                    "Accept-Language": self.language,
+                    "Authorization": "bearer " + self.session["access_token"],
+                    "Content-Type": "application/json; charset=UTF-8",
+                    "Host": "server.sk-robot.com",
+                    "Connection": "Keep-Alive",
+                    "User-Agent": "okhttp/4.8.1",
+                    "Accept-Encoding": "gzip",
+                },
+                json=data,
+                timeout=10,
+            )
+            response_data = response.json()
+            _LOGGER.debug(json.dumps(response_data))
+            if response_data.get("ok") is False:
+                self.get_device(devicesn).error_text = response_data.get("msg")
+                _LOGGER.debug(response_data.get("msg"))
+            else:
+                self.get_device(devicesn).error_text = ""
+        except Exception as error:  # pylint: disable=broad-except
+            _LOGGER.debug(error)
+            if hasattr(error, "response"):
+                _LOGGER.debug(json.dumps(error.response.json()))
+
+    def set_rain_status(self, state: bool, delaymin: int, devicesn):
+        """Set rain status."""
+        try:
+            #
+            data = {
+                "appId": self.session["user_id"],
+                "deviceSn": devicesn,
+                "rainDelayDuration": delaymin,
+                "rainFlag": state,
+            }
+            _LOGGER.debug(data)
+            response = requests.post(
+                url="http://server.sk-robot.com/api/app_mower/device/setRain",
+                headers={
+                    "Accept-Language": self.language,
+                    "Authorization": "bearer " + self.session["access_token"],
+                    "Content-Type": "application/json",
+                    "Host": "server.sk-robot.com",
+                    "Connection": "Keep-Alive",
+                    "User-Agent": "okhttp/4.8.1",
+                },
+                json=data,
+                timeout=10,
+            )
+            response_data = response.json()
+            _LOGGER.debug(json.dumps(response_data))
+            if response_data.get("ok") is False:
+                self.get_device(devicesn).error_text = response_data.get("msg")
+                _LOGGER.debug(response_data.get("msg"))
+            else:
+                self.get_device(devicesn).error_text = ""
+
+        except Exception as error:  # pylint: disable=broad-except
+            _LOGGER.debug(error)
+            if hasattr(error, "response"):
+                _LOGGER.debug(json.dumps(error.response.json()))
+
     def set_state_change(self, command, state, devicesn):
         """Command is "mode" and state is 1 = Start, 0 = Pause, 2 = Home, 4 = Border."""
         # device_id = self.DeviceSn  # self.devicedata["data"].get("id")
@@ -447,17 +733,23 @@ class AdanoRoboticmower:
                 url=f"http://server.sk-robot.com/api/mower/device/setWorkStatus/{devicesn}/"
                 f"{self.session['user_id']}?{command}={state}",
                 headers={
-                    "Accept-Language": "da",
+                    "Accept-Language": self.language,
                     "Authorization": "bearer " + self.session["access_token"],
                     "Content-Type": "application/json",
                     "Host": "server.sk-robot.com",
                     "Connection": "Keep-Alive",
-                    "User-Agent": "okhttp/4.4.1",
+                    "User-Agent": "okhttp/4.8.1",
                 },
                 timeout=10,
             )
             response_data = response.json()
             _LOGGER.debug(json.dumps(response_data))
+            if response_data.get("ok") is False:
+                self.get_device(devicesn).error_text = response_data.get("msg")
+                _LOGGER.debug(response_data.get("msg"))
+            else:
+                self.get_device(devicesn).error_text = ""
+
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.debug(error)
             if hasattr(error, "response"):

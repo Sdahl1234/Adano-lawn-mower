@@ -33,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Battery",
                 PERCENTAGE,
                 "Power",
-                "mqtt",
+                "",
                 "mdi:battery",
                 "adano_battery",
             )
@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Mower status",
                 "",
                 "Mode",
-                "mqtt",
+                "",
                 "",
                 "adano_mower_state",
             )
@@ -64,7 +64,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Wifi level",
                 "Streger",
                 "wifi_lv",
-                "mqtt",
+                "",
                 "mdi:wifi",
                 "adano_wifi_level",
             )
@@ -77,10 +77,25 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             AdanoSensor(
                 coordinator,
                 None,
+                "State change error",
+                "",
+                "state_error",
+                "",
+                "mdi:alert-circle",
+                "adano_state_error",
+            )
+            for coordinator in robot_coordinators(hass, entry)
+        ]
+    )
+    async_add_devices(
+        [
+            AdanoSensor(
+                coordinator,
+                None,
                 "Rain sensor",
                 "",
                 "rain_status",
-                "mqtt",
+                "",
                 "mdi:weather-pouring",
                 "adano_rain_status",
             )
@@ -96,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Rain senor wait time",
                 "min",
                 "rain_delay_set",
-                "mqtt",
+                "",
                 "mdi:clock-time-three-outline",
                 "adano_rain_delay_set",
             )
@@ -111,7 +126,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Rain sensor time left",
                 "min",
                 "rain_delay_left",
-                "mqtt",
+                "",
                 "mdi:clock-time-three-outline",
                 "adano_sensor_counter",
             )
@@ -127,7 +142,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Actual mowing time",
                 "min",
                 "cur_min",
-                "mqtt",
+                "",
                 "mdi:clock-time-three-outline",
                 "adano_mowing_time",
             )
@@ -142,7 +157,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Zone 1 start",
                 "%",
                 "mul_zon1",
-                "mqtt",
+                "",
                 "mdi:map",
                 "adanozone1",
             )
@@ -157,7 +172,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Zone 2 start",
                 "%",
                 "mul_zon2",
-                "mqtt",
+                "",
                 "mdi:map",
                 "adanozone2",
             )
@@ -172,7 +187,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Zone 3 start",
                 "%",
                 "mul_zon3",
-                "mqtt",
+                "",
                 "mdi:map",
                 "adanozone3",
             )
@@ -187,7 +202,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Zone 4 start",
                 "%",
                 "mul_zon4",
-                "mqtt",
+                "",
                 "mdi:map",
                 "adanozone4",
             )
@@ -203,7 +218,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Error code",
                 "",
                 "errortype",
-                "mqtt",
+                "",
                 "mdi:alert-circle",
                 "adano_error",
             )
@@ -235,7 +250,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Schedule",
                 "",
                 "Schedule",
-                "mqtt",
+                "",
                 "mdi:calendar",
                 "adano_schedule",
             )
@@ -295,11 +310,11 @@ class AdanoSensor(AdanoEntity, SensorEntity):
             if Start is not None:
                 attributes[f"{day}_Start"] = time.strftime(
                     "%H:%M", time.gmtime(int(Start) * 60)
-                )
+                )[0:5]
             if End is not None:
                 attributes[f"{day}_End"] = time.strftime(
                     "%H:%M", time.gmtime(int(End) * 60)
-                )
+                )[0:5]
             if Trimming is not None:
                 attributes[f"{day}_Border"] = Trimming
 
@@ -324,8 +339,7 @@ class AdanoSensor(AdanoEntity, SensorEntity):
             ival = self._data_handler.get_device(self._sn).mode
             if self._data_handler.get_device(self._sn).errortype != 0:
                 val = (
-                    "Fejl: "
-                    + self._data_handler.get_device(self._sn)
+                    self._data_handler.get_device(self._sn)
                     .devicedata["data"]
                     .get("faultStatusName")
                     + " ("
@@ -360,6 +374,8 @@ class AdanoSensor(AdanoEntity, SensorEntity):
                 val = ADANO_UNKNOWN
         elif self._valuepair == "Schedule":
             val = "Schedule"
+        elif self._valuepair == "state_error":
+            val = self._data_handler.get_device(self._sn).error_text
         return val
 
     @property
@@ -367,19 +383,19 @@ class AdanoSensor(AdanoEntity, SensorEntity):
         """Attributes to schedule."""
         attributes = {}
         if self._valuepair == "Schedule":
-            data = self._data_handler.get_device(self._sn).Mon
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(1).mqtt_day
             self.AddAttributes("Monday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Tue
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(2).mqtt_day
             self.AddAttributes("Tuesday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Wed
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(3).mqtt_day
             self.AddAttributes("Wednesday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Thu
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(4).mqtt_day
             self.AddAttributes("Thursday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Fri
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(5).mqtt_day
             self.AddAttributes("Friday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Sat
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(6).mqtt_day
             self.AddAttributes("Saturday", data, attributes)
-            data = self._data_handler.get_device(self._sn).Sun
+            data = self._data_handler.get_device(self._sn).Schedule.GetDay(7).mqtt_day
             self.AddAttributes("Sunday", data, attributes)
 
         return attributes

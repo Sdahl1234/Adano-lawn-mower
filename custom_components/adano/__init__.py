@@ -14,8 +14,13 @@ from .const import DH, DOMAIN, ROBOTS
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.DEVICE_TRACKER,
     Platform.LAWN_MOWER,
+    Platform.NUMBER,
     Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.TEXT,
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +41,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     email = entry.data.get(CONF_EMAIL)
     password = entry.data.get(CONF_PASSWORD)
 
-    data_handler = AdanoRoboticmower(email, password)
+    language = hass.config.language
+
+    data_handler = AdanoRoboticmower(email, password, language)
     await hass.async_add_executor_job(data_handler.on_load)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {DH: data_handler}
 

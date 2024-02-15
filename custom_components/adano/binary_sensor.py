@@ -21,7 +21,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Dock",
                 "",
                 "Station",
-                "mqtt",
                 "",
                 "adano_dock",
             )
@@ -37,7 +36,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Rain sensor active",
                 "",
                 "rain_en",
-                "mqtt",
                 "mdi:weather-pouring",
                 "adano_rain_sensor_active",
             )
@@ -53,7 +51,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Multizone",
                 "",
                 "mul_en",
-                "mqtt",
                 "",
                 "adano_multizone",
             )
@@ -69,7 +66,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Multizone auto",
                 "",
                 "mul_auto",
-                "mqtt",
                 "",
                 "adano_multizoneauto",
             )
@@ -85,7 +81,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "Online",
                 "",
                 "deviceOnlineFlag",
-                "mqtt",
                 "mdi:wifi",
                 "adano_online",
             )
@@ -104,7 +99,6 @@ class AdanoBinarySensor(AdanoEntity, BinarySensorEntity):
         name: str,
         unit: str,
         valuepair: str,
-        source: str,
         icon: str,
         translationkey: str,
     ) -> None:
@@ -116,7 +110,6 @@ class AdanoBinarySensor(AdanoEntity, BinarySensorEntity):
         self._attr_device_class = device_class
         self._attr_native_unit_of_measurement = unit
         self._valuepair = valuepair
-        self._source = source
         self._icon = icon
         self._attr_has_entity_name = True
         self._attr_translation_key = translationkey
@@ -135,13 +128,13 @@ class AdanoBinarySensor(AdanoEntity, BinarySensorEntity):
         """Return true if the binary sensor is on."""
         if self._valuepair == "Station":
             return self._data_handler.get_device(self._sn).station
-        elif self._valuepair == "rain_en":
+        if self._valuepair == "rain_en":
             return self._data_handler.get_device(self._sn).rain_en
-        elif self._valuepair == "mul_en":
+        if self._valuepair == "mul_en":
             return self._data_handler.get_device(self._sn).mul_en
-        elif self._valuepair == "mul_auto":
+        if self._valuepair == "mul_auto":
             return self._data_handler.get_device(self._sn).mul_auto
-        elif self._valuepair == "deviceOnlineFlag":
+        if self._valuepair == "deviceOnlineFlag":
             return (
                 self._data_handler.get_device(self._sn).deviceOnlineFlag
                 == '{"online":"1"}'

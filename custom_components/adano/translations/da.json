@@ -18,7 +18,9 @@
 	},
 	"entity": {
 		"sensor": {
-			"test": {"name": "dansk"},
+			"adano_state_error": {
+				"name": "Status fejl"
+			},
 			"adano_mower_state": {
 				"name": "Robot status",
 				"state": {
@@ -113,6 +115,76 @@
 					"Mowing border": "Klipper kant",
 					"Unknown": "Ukendt"
 				}
+			}
+		},
+		"button": {
+			"adano_start": {
+				"name": "Start"
+			},
+			"adano_pause": {
+				"name": "Pause"
+			},
+			"adano_border": {
+				"name": "Klip kant"
+			},
+			"adano_home": {
+				"name": "Hjem"
+			}
+		},
+		"device_tracker": {
+			"adano_tracker": {
+				"name": "Robot lokation"
+			}
+		},
+		"switch": {
+			"adano_rain_sensor": {
+				"name": "Regn sensor"
+			},
+			"adano_multi_zone": {
+				"name": "Multizone"
+			},
+			"adano_multi_zone_auto": {
+				"name": "Multizone auto"
+			}
+		},
+		"number": {
+			"adano_rain_delay": {
+				"name": "Regn forsinkelse"
+			},
+			"adano_zone1": {
+				"name": "Zone 1 start"
+			},
+			"adano_zone2": {
+				"name": "Zone 2 start"
+			},
+			"adano_zone3": {
+				"name": "Zone 3 start"
+			},
+			"adano_zone4": {
+				"name": "Zone 4 start"
+			}
+		},
+		"text": {
+			"adano_schedule_text_1": {
+				"name": "Ugeplan mandag"
+			},
+			"adano_schedule_text_2": {
+				"name": "Ugeplan tirsdag"
+			},
+			"adano_schedule_text_3": {
+				"name": "Ugeplan onsdag"
+			},
+			"adano_schedule_text_4": {
+				"name": "Ugeplan torsdag"
+			},
+			"adano_schedule_text_5": {
+				"name": "Ugeplan fredag"
+			},
+			"adano_schedule_text_6": {
+				"name": "Ugeplan lørdag"
+			},
+			"adano_schedule_text_7": {
+				"name": "Ugeplan søndag"
 			}
 		}
 	}

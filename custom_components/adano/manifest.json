@@ -6,6 +6,7 @@
   "requirements": ["requests", "paho-mqtt"],
   "codeowners": ["@Sdahl1234"],
   "integration_type": "device",
+  "iot_class": "cloud_push",
   "config_flow": true,
-  "version": "1.0.3"
+  "version": "1.0.4"
 }

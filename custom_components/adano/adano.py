@@ -157,7 +157,6 @@ class AdanoRoboticmower:
 
     def update(self):
         """Force HA to update sensors."""
-        # _LOGGER.debug("Force update")
 
     def on_load(self):
         """Init the robots."""
@@ -176,7 +175,6 @@ class AdanoRoboticmower:
                 ad.DeviceName = device["deviceName"]
                 ad.DeviceBluetooth = device["bluetoothMac"]
                 self.robotList.append(ad)
-                # name = device["deviceName"]
                 self.get_settings(device_sn)
             for device_sn in self.deviceArray:
                 self.update_devices(device_sn)

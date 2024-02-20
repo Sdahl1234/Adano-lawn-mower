@@ -23,11 +23,10 @@ from .entity import AdanoEntity
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     """Async Setup entry."""
-    # coordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.BATTERY,
                 "Battery",
@@ -46,7 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 coordinator,
                 None,
                 "Mower status",
-                "",
+                None,
                 "Mode",
                 "",
                 "",
@@ -55,7 +54,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
             AdanoSensor(
@@ -71,14 +69,13 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
             AdanoSensor(
                 coordinator,
                 None,
                 "State change error",
-                "",
+                None,
                 "state_error",
                 "",
                 "mdi:alert-circle",
@@ -93,7 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 coordinator,
                 None,
                 "Rain sensor",
-                "",
+                None,
                 "rain_status",
                 "",
                 "mdi:weather-pouring",
@@ -102,10 +99,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.DURATION,
                 "Rain senor wait time",
@@ -120,7 +116,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     )
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.DURATION,
                 "Rain sensor time left",
@@ -133,10 +129,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.DURATION,
                 "Actual mowing time",
@@ -151,7 +146,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     )
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.POWER_FACTOR,
                 "Zone 1 start",
@@ -166,7 +161,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     )
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.POWER_FACTOR,
                 "Zone 2 start",
@@ -181,7 +176,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     )
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.POWER_FACTOR,
                 "Zone 3 start",
@@ -196,7 +191,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
     )
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 SensorDeviceClass.POWER_FACTOR,
                 "Zone 4 start",
@@ -209,14 +204,13 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-    #
     async_add_devices(
         [
-            AdanoSensorInt(
+            AdanoSensor(
                 coordinator,
                 None,
                 "Error code",
-                "",
+                None,
                 "errortype",
                 "",
                 "mdi:alert-circle",
@@ -225,14 +219,13 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
             AdanoSensor(
                 coordinator,
                 None,
                 "ErrorText",
-                "",
+                None,
                 "faultStatusName",
                 "devicedata",
                 "mdi:alert-circle",
@@ -241,14 +234,13 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
             for coordinator in robot_coordinators(hass, entry)
         ]
     )
-
     async_add_devices(
         [
             AdanoSensor(
                 coordinator,
                 None,
                 "Schedule",
-                "",
+                None,
                 "Schedule",
                 "",
                 "mdi:calendar",
@@ -285,11 +277,8 @@ class AdanoSensor(AdanoEntity, SensorEntity):
         self._icon = icon
         self._attr_has_entity_name = True
         self._attr_translation_key = translationkey
-        self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"  # self._name
+        self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"
         self._sn = self.coordinator._devicesn
-
-        self._attr_state_class = None
-        self._attr_entity_category = None
 
     def AddAttributes(self, day: str, data: any, attributes: dict) -> None:
         """Add schedule."""
@@ -376,6 +365,24 @@ class AdanoSensor(AdanoEntity, SensorEntity):
             val = "Schedule"
         elif self._valuepair == "state_error":
             val = self._data_handler.get_device(self._sn).error_text
+        elif self._valuepair == "Power":
+            val = self._data_handler.get_device(self._sn).power
+        elif self._valuepair == "rain_delay_set":
+            val = self._data_handler.get_device(self._sn).rain_delay_set
+        elif self._valuepair == "rain_delay_left":
+            val = self._data_handler.get_device(self._sn).rain_delay_left
+        elif self._valuepair == "cur_min":
+            val = self._data_handler.get_device(self._sn).cur_min
+        elif self._valuepair == "mul_zon1":
+            val = self._data_handler.get_device(self._sn).mul_zon1
+        elif self._valuepair == "mul_zon2":
+            val = self._data_handler.get_device(self._sn).mul_zon2
+        elif self._valuepair == "mul_zon3":
+            val = self._data_handler.get_device(self._sn).mul_zon3
+        elif self._valuepair == "mul_zon4":
+            val = self._data_handler.get_device(self._sn).mul_zon4
+        elif self._valuepair == "errortype":
+            val = self._data_handler.get_device(self._sn).errortype
         return val
 
     @property
@@ -399,70 +406,6 @@ class AdanoSensor(AdanoEntity, SensorEntity):
             self.AddAttributes("Sunday", data, attributes)
 
         return attributes
-
-    @property
-    def icon(self):
-        """Icon."""
-        return self._icon
-
-
-class AdanoSensorInt(AdanoEntity, SensorEntity):
-    """Adano sensor integer."""
-
-    def __init__(
-        self,
-        coordinator: AdanoDataCoordinator,
-        device_class: SensorDeviceClass,
-        name: str,
-        unit: str,
-        valuepair: str,
-        source: str,
-        icon: str,
-        translationkey: str,
-    ) -> None:
-        """Init."""
-        super().__init__(coordinator)
-        self.data_coordinator = coordinator
-        self._data_handler = self.data_coordinator.data_handler
-        self._name = name
-        self._attr_device_class = device_class
-        self._attr_native_unit_of_measurement = unit
-        self._valuepair = valuepair
-        self._source = source
-        self._icon = icon
-        self._attr_has_entity_name = True
-        self._attr_translation_key = translationkey
-        self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"  # self._name
-        self._sn = self.coordinator._devicesn
-
-    # This property is important to let HA know if this entity is online or not.
-    # If an entity is offline (return False), the UI will reflect this.
-    @property
-    def available(self) -> bool:
-        """Return True if roller and hub is available."""
-        return True  # self._data_handler.is_online
-
-    @property
-    def native_value(self):
-        """Return value."""
-        if self._valuepair == "Power":
-            return self._data_handler.get_device(self._sn).power
-        if self._valuepair == "rain_delay_set":
-            return self._data_handler.get_device(self._sn).rain_delay_set
-        if self._valuepair == "rain_delay_left":
-            return self._data_handler.get_device(self._sn).rain_delay_left
-        if self._valuepair == "cur_min":
-            return self._data_handler.get_device(self._sn).cur_min
-        if self._valuepair == "mul_zon1":
-            return self._data_handler.get_device(self._sn).mul_zon1
-        if self._valuepair == "mul_zon2":
-            return self._data_handler.get_device(self._sn).mul_zon2
-        if self._valuepair == "mul_zon3":
-            return self._data_handler.get_device(self._sn).mul_zon3
-        if self._valuepair == "mul_zon4":
-            return self._data_handler.get_device(self._sn).mul_zon4
-        if self._valuepair == "errortype":
-            return self._data_handler.get_device(self._sn).errortype
 
     @property
     def icon(self):

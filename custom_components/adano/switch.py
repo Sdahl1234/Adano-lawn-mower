@@ -115,7 +115,6 @@ class AdanoMultiZoneSwitch(AdanoEntity, SwitchEntity):
         self._attr_translation_key = translationkey
         self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"
         self._sn = self.coordinator._devicesn
-        # self.icon = "mdi:weather-pouring"
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
@@ -184,7 +183,6 @@ class AdanoMultiZoneAutoSwitch(AdanoEntity, SwitchEntity):
         self._attr_translation_key = translationkey
         self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"
         self._sn = self.coordinator._devicesn
-        # self.icon = "mdi:weather-pouring"
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""

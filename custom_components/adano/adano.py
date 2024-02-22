@@ -147,6 +147,7 @@ class AdanoRoboticmower:
         self.refresh_token_interval = None
         self.refresh_token_timeout = None
         self.robotList = []
+        self._dataupdated = None
 
     def get_device(self, devicesn) -> AdanoDevice:
         """Get the device object."""
@@ -323,7 +324,8 @@ class AdanoRoboticmower:
                     device.Schedule.UpdateFromMqtt(data.get("Sat"), 6)
                 if "Sun" in data:
                     device.Schedule.UpdateFromMqtt(data.get("Sun"), 7)
-
+                if self._dataupdated is not None:
+                    self._dataupdated(device.devicesn)
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
             _LOGGER.debug("MQTT message: " + message.payload.decode())  # noqa: G003
@@ -390,6 +392,9 @@ class AdanoRoboticmower:
                 _LOGGER.debug(f"Error getting device settings for {snr}")  # noqa: G004
                 _LOGGER.debug(json.dumps(response_data))
                 return
+            elif self._dataupdated is not None:
+                self._dataupdated(device.devicesn)
+
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.debug(error)
             if hasattr(error, "response"):
@@ -432,6 +437,8 @@ class AdanoRoboticmower:
                 if response_data["code"] != 0:
                     _LOGGER.debug(response_data)
                     continue
+                elif self._dataupdated is not None:
+                    self._dataupdated(device.devicesn)
 
             except Exception as error:  # pylint: disable=broad-except
                 if hasattr(error, "response"):

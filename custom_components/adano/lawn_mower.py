@@ -81,8 +81,7 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
         """Return the current state."""
         if self._data_handler.get_device(self._sn).errortype != 0:
             return (
-                "Fejl: "
-                + self._data_handler.get_device(self._sn)
+                self._data_handler.get_device(self._sn)
                 .devicedata["data"]
                 .get("faultStatusName")
                 + " ("

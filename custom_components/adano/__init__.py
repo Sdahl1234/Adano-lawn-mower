@@ -1,6 +1,5 @@
 """Adano mower integration."""
 import asyncio
-from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -91,10 +90,18 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
             # Name of the data. For logging purposes.
             name=DOMAIN,
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=5),  # 60 * 60),
+            # update_interval=timedelta(seconds=5),  # 60 * 60),
         )
+        self.always_update = True
         self.data_handler = data_handler
         self._devicesn = devicesn
+        self.data_handler._dataupdated = self.dataupdated
+
+    def dataupdated(self, devicesn: str):
+        """Func Callback when data is updated."""
+        _LOGGER.debug(f"callback - adano {self._devicesn} data updated")  # noqa: G004
+        if self._devicesn == devicesn:
+            self.hass.add_job(self.async_set_updated_data, None)
 
     @property
     def dsn(self):
@@ -130,8 +137,6 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
         self.data_handler.update_devices(self._devicesn)
 
     async def _async_update_data(self):
-        # _LOGGER.debug("_async_update_data")
-
         try:
             await self.hass.async_add_executor_job(self.data_handler.update)
             return self.data_handler

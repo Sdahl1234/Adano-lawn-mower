@@ -30,7 +30,7 @@ class AdanoDevice:
         self.rain_delay_set = 0
         self.rain_delay_left = 0
         self.cur_min = 0
-        self.deviceOnlineFlag = False
+        self.deviceOnlineFlag = ""
         self.zoneOpenFlag = False
         self.mul_en = False
         self.mul_auto = False
@@ -63,7 +63,8 @@ class AdanoDevice:
         self.rain_en = self.devicedata["data"].get("rainFlag")
         self.rain_delay_set = int(self.devicedata["data"].get("rainDelayDuration"))
         self.rain_delay_left = self.devicedata["data"].get("rainDelayLeft")
-        self.deviceOnlineFlag = self.devicedata["data"].get("onlineFlag")
+        if self.devicedata["data"].get("onlineFlag"):
+            self.deviceOnlineFlag = '{"online":"1"}'
         self.zoneOpenFlag = self.settings["data"].get("zoneOpenFlag")
         self.mul_en = self.settings["data"].get("zoneOpenFlag")
         self.mul_auto = self.settings["data"].get("zoneAutomaticFlag")
@@ -523,7 +524,7 @@ class AdanoRoboticmower:
 
     def set_schedule(
         self,
-        ScheduleList: [],
+        ScheduleList,  #: [],
         devicesn,
     ):
         """Set schedule data."""

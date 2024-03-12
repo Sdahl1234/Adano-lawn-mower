@@ -25,11 +25,12 @@
 				"name": "Robot status",
 				"state": {
 					"Standby": "Standby",
-					"Mowing": "Arbejder",
+					"Mowing": "Klipper",
 					"On the way home": "På vej hjem",
 					"Charging": "Oplader",
 					"Mowing border": "Klipper kant",
-					"Unknown": "Ukendt"
+					"Unknown": "Ukendt",
+					"Unknown4":"Mode 4"
 				}
 			},
 			"adano_battery": {
@@ -109,11 +110,12 @@
 			"adano_lawnmower": {
                 "state": {
 					"Standby": "Standby",
-					"Mowing": "Arbejder",
+					"Mowing": "Klipper",
 					"On the way home": "På vej hjem",
 					"Charging": "Oplader",
 					"Mowing border": "Klipper kant",
-					"Unknown": "Ukendt"
+					"Unknown": "Ukendt",
+					"Unknown4": "Mode 4"
 				}
 			}
 		},

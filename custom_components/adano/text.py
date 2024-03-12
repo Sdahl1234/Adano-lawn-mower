@@ -106,9 +106,7 @@ class AdanoScheduleText(AdanoEntity, TextEntity):
             start = value[0:5]
             stop = value[8:13]
             trim = False
-            if "Trim" in value:
-                trim = True
-            elif "trim" in value:
+            if "Trim" in value or "trim" in value:
                 trim = True
 
             retval2 = {

@@ -10,6 +10,7 @@ ADANO_MOWING = "Mowing"
 ADANO_GOING_HOME = "On the way home"
 ADANO_CHARGING = "Charging"
 ADANO_MOWING_BORDER = "Mowing border"
+ADANO_UNKNOWN_4 = "Unknown4"
 ADANO_UNKNOWN = "Unknown"
 
 ADANO_DRY = "Dry"

@@ -22,6 +22,7 @@ from .const import (
     ADANO_MOWING_BORDER,
     ADANO_STANDBY,
     ADANO_UNKNOWN,
+    ADANO_UNKNOWN_4,
 )
 from .entity import AdanoEntity
 
@@ -98,9 +99,9 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
         elif ival == 3:
             val = ADANO_CHARGING
         elif ival == 4:
-            val = ADANO_MOWING_BORDER
+            val = ADANO_UNKNOWN_4
         elif ival == 7:
-            val = ADANO_UNKNOWN
+            val = ADANO_MOWING_BORDER
         else:
             val = ADANO_UNKNOWN
         return val

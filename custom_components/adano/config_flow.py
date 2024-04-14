@@ -1,4 +1,5 @@
 """Adds config flow for Adano mower integration."""
+
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
@@ -93,14 +94,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Step init."""
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Optional(CONF_PASSWORD): str,
-                }
-            ),
-        )
+        return self.async_show_form(step_id="init", data_schema=DATA_SCHEMA)
 
 
 @callback

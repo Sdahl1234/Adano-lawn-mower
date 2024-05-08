@@ -167,6 +167,18 @@
 			},
 			"adano_zone4": {
 				"name": "Zone 4 start"
+			},
+			"adano_mulpro1": {
+				"name": "Zone 1 prioritet"
+			},
+			"adano_mulpro2": {
+				"name": "Zone 2 prioritet"
+			},
+			"adano_mulpro3": {
+				"name": "Zone 3 prioritet"
+			},
+			"adano_mulpro4": {
+				"name": "Zone 4 prioritet"
 			}
 		},
 		"text": {

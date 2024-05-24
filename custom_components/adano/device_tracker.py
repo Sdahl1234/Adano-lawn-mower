@@ -1,4 +1,5 @@
 """Device tracker Adano robotic mower."""
+
 from __future__ import annotations
 
 import logging
@@ -41,7 +42,7 @@ class AdanoDeviceTracker(AdanoEntity, TrackerEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = translationkey
         self._attr_unique_id = f"{self._name}_{self.data_coordinator.dsn}"
-        self._sn = self.coordinator._devicesn
+        self._sn = self.coordinator.devicesn
         self._icon = "mdi:map-marker-radius"
 
     @property

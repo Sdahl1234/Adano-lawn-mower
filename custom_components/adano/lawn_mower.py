@@ -45,7 +45,7 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
         super().__init__(coordinator)
         self.coordinator = coordinator
         self._data_handler = self.coordinator.data_handler
-        self._sn = self.coordinator._devicesn
+        self._sn = self.coordinator.devicesn
         self._name = self._data_handler.get_device(self._sn).DeviceName
 
     @property

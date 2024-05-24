@@ -48,6 +48,8 @@ class AdanoDevice:
         self.forceupdate = False
         self.error_text = ""
 
+        self.dataupdated = None
+
         self.DeviceModel = ""
         self.DeviceName = ""
         self.DeviceBluetooth = ""
@@ -181,7 +183,6 @@ class AdanoRoboticmower:
         self.refresh_token_interval = None
         self.refresh_token_timeout = None
         self.robotList = []
-        self._dataupdated = None
         self.login_ok: bool = False
 
     def get_device(self, devicesn) -> AdanoDevice:
@@ -253,7 +254,7 @@ class AdanoRoboticmower:
                 _LOGGER.debug(json.dumps(response_data))
                 self.session = response_data
                 login_attempt = MAX_LOGIN_RETRIES
-                return True
+                return True  # noqa: TRY300
             except requests.exceptions.HTTPError as errh:
                 _LOGGER.debug(f"Login attempt {login_attempt}: Http Error:  {errh}")  # noqa: G004
             except requests.exceptions.ConnectionError as errc:
@@ -264,7 +265,7 @@ class AdanoRoboticmower:
                 _LOGGER.debug(f"Login attempt {login_attempt}: Timeout Error: {errt}")  # noqa: G004
             except requests.exceptions.RequestException as err:
                 _LOGGER.debug(f"Login attempt {login_attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 _LOGGER.debug(f"Login attempt {login_attempt}: failed {error}")  # noqa: G004
         return False
 
@@ -287,7 +288,7 @@ class AdanoRoboticmower:
             )
             _LOGGER.debug("MQTT starting loop")
             self.mqtt_client.loop_start()
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.debug("MQTT connect error: " + str(error))  # noqa: G003
 
     def on_mqtt_disconnect(self, client, userdata, rc):
@@ -391,9 +392,9 @@ class AdanoRoboticmower:
                 if "Sun" in data:
                     device.Schedule.UpdateFromMqtt(data.get("Sun"), 7)
                     schedule = True
-                if self._dataupdated is not None:
-                    self._dataupdated(device.devicesn, schedule)
-        except Exception as error:  # pylint: disable=broad-except
+                if device.dataupdated is not None:
+                    device.dataupdated(device.devicesn, schedule)
+        except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
             _LOGGER.debug("MQTT message: " + message.payload.decode())  # noqa: G003
 
@@ -436,7 +437,7 @@ class AdanoRoboticmower:
                     return
                 lg = f"Found {len(response_data['data'])} devices"
                 _LOGGER.info(lg)
-                return
+                return  # noqa: TRY300
 
             except requests.exceptions.HTTPError as errh:
                 _LOGGER.debug(f"Get device list attempt {attempt}: Http Error:  {errh}")  # noqa: G004
@@ -450,7 +451,7 @@ class AdanoRoboticmower:
                 )
             except requests.exceptions.RequestException as err:
                 _LOGGER.debug(f"Get device list attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 _LOGGER.debug(f"Get device list attempt {attempt}: failed {error}")  # noqa: G004
 
     def get_settings(self, snr):
@@ -482,9 +483,9 @@ class AdanoRoboticmower:
                     _LOGGER.debug(f"Error getting device settings for {snr}")  # noqa: G004
                     _LOGGER.debug(json.dumps(response_data))
                     return
-                if self._dataupdated is not None:
-                    self._dataupdated(device.devicesn, False)
-                return
+                if device.dataupdated is not None:
+                    device.dataupdated(device.devicesn, False)
+                return  # noqa: TRY300
             except requests.exceptions.HTTPError as errh:
                 _LOGGER.debug(f"Get settings attempt {attempt}: Http Error:  {errh}")  # noqa: G004
             except requests.exceptions.ConnectionError as errc:
@@ -495,7 +496,7 @@ class AdanoRoboticmower:
                 _LOGGER.debug(f"Get settings attempt {attempt}: Timeout Error: {errt}")  # noqa: G004
             except requests.exceptions.RequestException as err:
                 _LOGGER.debug(f"Get settings attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 _LOGGER.debug(f"Get settings attempt {attempt}: failed {error}")  # noqa: G004
 
     def update_devices(self, device_sn):
@@ -541,11 +542,11 @@ class AdanoRoboticmower:
                     if response_data["code"] != 0:
                         _LOGGER.debug(response_data)
                         continue
-                    if self._dataupdated is not None:
-                        self._dataupdated(device.devicesn, False)
-                    return
+                    if device.dataupdated is not None:
+                        device.dataupdated(device.devicesn, False)
+                    return  # noqa: TRY300
 
-                except Exception as error:  # pylint: disable=broad-except
+                except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                     if hasattr(error, "response"):
                         if error.response.status == 401:
                             _LOGGER.debug(json.dumps(error.response.json()))
@@ -596,7 +597,7 @@ class AdanoRoboticmower:
             _LOGGER.debug(f"refresh_token Timeout Error: {errt}")  # noqa: G004
         except requests.exceptions.RequestException as err:
             _LOGGER.debug(f"refresh_token Error: {err}")  # noqa: G004
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.debug(f"refresh_token failed {error}")  # noqa: G004
 
     def unload(self):
@@ -743,33 +744,33 @@ class AdanoRoboticmower:
                 _LOGGER.debug(json.dumps(response_data))
                 if response_data.get("ok") is False:
                     self.get_device(devicesn).error_text = response_data.get("msg")
-                    self._dataupdated(devicesn, False)
+                    self.get_device(devicesn).dataupdated(devicesn, False)
                     _LOGGER.debug(response_data.get("msg"))
                 else:
                     self.get_device(devicesn).error_text = ""
-                return
+                return  # noqa: TRY300
 
             except requests.exceptions.HTTPError as errh:
                 self.get_device(devicesn).error_text = errh
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set schedule attempt {attempt}: Http Error:  {errh}")  # noqa: G004
             except requests.exceptions.ConnectionError as errc:
                 self.get_device(devicesn).error_text = errc
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set schedule attempt {attempt}: Error Connecting: {errc}"  # noqa: G004
                 )
             except requests.exceptions.Timeout as errt:
                 self.get_device(devicesn).error_text = errt
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set schedule attempt {attempt}: Timeout Error: {errt}")  # noqa: G004
             except requests.exceptions.RequestException as err:
                 self.get_device(devicesn).error_text = err
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set schedule attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 self.get_device(devicesn).error_text = error
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set_schedule attempt {attempt}: failed {error}")  # noqa: G004
 
     def set_zone_status(
@@ -831,35 +832,35 @@ class AdanoRoboticmower:
                 _LOGGER.debug(json.dumps(response_data))
                 if response_data.get("ok") is False:
                     self.get_device(devicesn).error_text = response_data.get("msg")
-                    self._dataupdated(devicesn, False)
+                    self.get_device(devicesn).dataupdated(devicesn, False)
                     _LOGGER.debug(response_data.get("msg"))
                 else:
                     self.get_device(devicesn).error_text = ""
-                return
+                return  # noqa: TRY300
 
             except requests.exceptions.HTTPError as errh:
                 self.get_device(devicesn).error_text = errh
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set zone status attempt {attempt}: Http Error:  {errh}")  # noqa: G004
             except requests.exceptions.ConnectionError as errc:
                 self.get_device(devicesn).error_text = errc
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set zone status attempt {attempt}: Error Connecting: {errc}"  # noqa: G004
                 )
             except requests.exceptions.Timeout as errt:
                 self.get_device(devicesn).error_text = errt
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set zone status attempt {attempt}: Timeout Error: {errt}"  # noqa: G004
                 )
             except requests.exceptions.RequestException as err:
                 self.get_device(devicesn).error_text = err
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set zone status attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 self.get_device(devicesn).error_text = error
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set zone status attempt {attempt}: failed {error}")  # noqa: G004
 
     def set_rain_status(self, state: bool, delaymin: int, devicesn):
@@ -894,35 +895,35 @@ class AdanoRoboticmower:
                 _LOGGER.debug(json.dumps(response_data))
                 if response_data.get("ok") is False:
                     self.get_device(devicesn).error_text = response_data.get("msg")
-                    self._dataupdated(devicesn, False)
+                    self.get_device(devicesn).dataupdated(devicesn, False)
                     _LOGGER.debug(response_data.get("msg"))
                 else:
                     self.get_device(devicesn).error_text = ""
-                return
+                return  # noqa: TRY300
 
             except requests.exceptions.HTTPError as errh:
                 self.get_device(devicesn).error_text = errh
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set rain status attempt {attempt}: Http Error:  {errh}")  # noqa: G004
             except requests.exceptions.ConnectionError as errc:
                 self.get_device(devicesn).error_text = errc
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set rain status attempt {attempt}: Error Connecting: {errc}"  # noqa: G004
                 )
             except requests.exceptions.Timeout as errt:
                 self.get_device(devicesn).error_text = errt
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set rain status attempt {attempt}: Timeout Error: {errt}"  # noqa: G004
                 )
             except requests.exceptions.RequestException as err:
                 self.get_device(devicesn).error_text = err
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set rain status attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 self.get_device(devicesn).error_text = error
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set rain status attempt {attempt}: failed {error}")  # noqa: G004
 
     def set_state_change(self, command, state, devicesn):
@@ -956,38 +957,38 @@ class AdanoRoboticmower:
                 _LOGGER.debug(json.dumps(response_data))
                 if response_data.get("ok") is False:
                     self.get_device(devicesn).error_text = response_data.get("msg")
-                    self._dataupdated(devicesn, False)
+                    self.get_device(devicesn).dataupdated(devicesn, False)
                     _LOGGER.debug(response_data.get("msg"))
                 else:
                     self.get_device(devicesn).error_text = ""
 
                 refresh_timeout = Timer(10, self.update_devices, [devicesn])
                 refresh_timeout.start()
-                return
+                return  # noqa: TRY300
 
             except requests.exceptions.HTTPError as errh:
                 self.get_device(devicesn).error_text = errh
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set state change attempt {attempt}: Http Error:  {errh}"  # noqa: G004
                 )
             except requests.exceptions.ConnectionError as errc:
                 self.get_device(devicesn).error_text = errc
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set state change attempt {attempt}: Error Connecting: {errc}"  # noqa: G004
                 )
             except requests.exceptions.Timeout as errt:
                 self.get_device(devicesn).error_text = errt
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(
                     f"Set state change attempt {attempt}: Timeout Error: {errt}"  # noqa: G004
                 )
             except requests.exceptions.RequestException as err:
                 self.get_device(devicesn).error_text = err
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set state change attempt {attempt}: Error: {err}")  # noqa: G004
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
                 self.get_device(devicesn).error_text = error
-                self._dataupdated(devicesn, False)
+                self.get_device(devicesn).dataupdated(devicesn, False)
                 _LOGGER.debug(f"Set state change attempt {attempt}: failed {error}")  # noqa: G004

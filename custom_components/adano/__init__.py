@@ -154,7 +154,10 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     async def file_exits(self):
         """Do file exists."""
         try:
-            f = open(self.filepath, encoding="utf-8")
+            f = await self.hass.async_add_executor_job(
+                open, self.filepath, "r", -1, "utf-8"
+            )
+            f.close()
             f.close()
         except FileNotFoundError:
             # save a new file
@@ -164,9 +167,13 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
         """Save data."""
         try:
             if append:
-                cfile = open(self.filepath, "w", encoding="utf-8")
+                cfile = await self.hass.async_add_executor_job(
+                    open, self.filepath, "w", -1, "utf-8"
+                )
             else:
-                cfile = open(self.filepath, "a", encoding="utf-8")
+                cfile = await self.hass.async_add_executor_job(
+                    open, self.filepath, "a", -1, "utf-8"
+                )
             ocrdata = json.dumps(self.jdata)
             self.data_handler.get_device(self.devicesn).Schedule.SavedData = self.jdata
             cfile.write(ocrdata)
@@ -177,7 +184,9 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     async def load_data(self):
         """Load data."""
         try:
-            cfile = open(self.filepath, encoding="utf-8")
+            cfile = await self.hass.async_add_executor_job(
+                open, self.filepath, "r", -1, "utf-8"
+            )
             ocrdata = cfile.read()
             cfile.close()
             _LOGGER.debug(f"ocrdata: {ocrdata}")  # noqa: G004

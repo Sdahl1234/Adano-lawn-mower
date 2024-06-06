@@ -49,13 +49,13 @@ class AdanoDeviceTracker(AdanoEntity, TrackerEntity):
     def latitude(self) -> float | None:
         """Return latitude value of the device."""
         val = self._data_handler.get_device(self._sn).devicedata["data"].get("lat")
-        return val
+        return val  # noqa: RET504
 
     @property
     def longitude(self) -> float | None:
         """Return longitude value of the device."""
         val = self._data_handler.get_device(self._sn).devicedata["data"].get("lng")
-        return val
+        return val  # noqa: RET504
 
     @property
     def source_type(self) -> Literal["gps"]:

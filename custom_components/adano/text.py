@@ -52,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> N
     async_add_entities(
         [
             AdanoScheduleText(
-                coordinator, "Schedule Fridays", 5, "adano_schedule_text_5"
+                coordinator, "Schedule Friday", 5, "adano_schedule_text_5"
             )
             for coordinator in robot_coordinators(hass, entry)
         ]
@@ -131,7 +131,7 @@ class AdanoScheduleText(AdanoEntity, TextEntity):
                 self.daynumber
             ).trim = val["trim"]
 
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.debug(error)
 
         await self.hass.async_add_executor_job(

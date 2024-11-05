@@ -3,6 +3,7 @@
 SERIAL_NO = "serial_no"
 DOMAIN = "adano"
 ROBOTS = "robots"
+DATAHANDLER = "DATAHANDLER"
 DH = "dh"
 
 ADANO_STANDBY = "Standby"

@@ -212,6 +212,7 @@ class AdanoZoneNumber(AdanoEntity, NumberEntity):
             return self._data_handler.get_device(self._sn).mul_zon3
         if self.zonenumber == 4:
             return self._data_handler.get_device(self._sn).mul_zon4
+        return 0
 
 
 class AdanoMulNumber(AdanoEntity, NumberEntity):
@@ -314,3 +315,4 @@ class AdanoMulNumber(AdanoEntity, NumberEntity):
             return self._data_handler.get_device(self._sn).mulpro_zon3
         if self.mulnumber == 4:
             return self._data_handler.get_device(self._sn).mulpro_zon4
+        return 0

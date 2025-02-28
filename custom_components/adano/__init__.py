@@ -54,7 +54,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # robot = [1, 2]
     robot = data_handler.deviceArray
-    robots = [AdanoDataCoordinator(hass, data_handler, devicesn) for devicesn in robot]
+    robots = [
+        AdanoDataCoordinator(hass, entry, data_handler, devicesn) for devicesn in robot
+    ]
 
     await asyncio.gather(
         *[coordinator.async_config_entry_first_refresh() for coordinator in robots]
@@ -87,8 +89,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
+type AdanoConfigEntry = ConfigEntry[AdanoDataCoordinator]
+
+
 class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
-    config_entry: ConfigEntry
+    config_entry: AdanoConfigEntry
 
     jdata: None
     data_loaded: bool = False
@@ -103,12 +108,18 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     }
 
     def __init__(
-        self, hass: HomeAssistant, data_handler: AdanoRoboticmower, devicesn
+        self,
+        hass: HomeAssistant,
+        config_entry: AdanoConfigEntry,
+        data_handler: AdanoRoboticmower,
+        devicesn,
+        brand,
     ) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             # Name of the data. For logging purposes.
             name=DOMAIN,
             # Polling interval. Will only be polled if there are subscribers.

@@ -84,7 +84,7 @@ class AdanoLawnMower(AdanoEntity, LawnMowerEntity):
             return (
                 self._data_handler.get_device(self._sn)
                 .devicedata["data"]
-                .get("faultStatusName")
+                .get("faultStatusCode")
                 + " ("
                 + str(self._data_handler.get_device(self._sn).errortype)
                 + ")"

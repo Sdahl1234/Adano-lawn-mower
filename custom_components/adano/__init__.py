@@ -113,7 +113,6 @@ class AdanoDataCoordinator(DataUpdateCoordinator):  # noqa: D101
         config_entry: AdanoConfigEntry,
         data_handler: AdanoRoboticmower,
         devicesn,
-        brand,
     ) -> None:
         """Initialize my coordinator."""
         super().__init__(

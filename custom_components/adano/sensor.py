@@ -392,6 +392,10 @@ class AdanoSensor(AdanoEntity, SensorEntity):
                     val = "For mange forhindringer"
                 elif val == 16:
                     val = "Uden for kanttråden"
+                elif val == 32:
+                    val = "Startet uden for kanttråden"
+                elif val == 262144:
+                    val = "Ladestrømmen er for høj"
                 else:
                     val = "Ukendt fejl"
         return val

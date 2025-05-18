@@ -58,7 +58,7 @@
           "name": "Rain sensor",
           "state": {
             "Dry": "Dry",
-            "Dry countdown": "Dry countdownr",
+            "Dry countdown": "Dry countdown",
             "Wet": "Wet",
             "Unknown": "Unknown"
           }

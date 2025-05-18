@@ -242,7 +242,7 @@ class AdanoRoboticmower:
             login_attempt = login_attempt + 1
             try:
                 response = requests.post(
-                    url="http://server.sk-robot.com/api/auth/oauth/token",
+                    url="https://server.sk-robot.com/api/auth/oauth/token",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "Basic YXBwOmFwcA==",
@@ -425,7 +425,7 @@ class AdanoRoboticmower:
 
             try:
                 response = requests.get(
-                    url="http://server.sk-robot.com/api/mower/device-user/list",
+                    url="https://server.sk-robot.com/api/mower/device-user/list",
                     headers={
                         "Content-Type": "application/json",
                         "Accept-Language": self.language,
@@ -474,7 +474,7 @@ class AdanoRoboticmower:
             try:
                 device = self.get_device(snr)
                 response = requests.get(
-                    url=f"http://server.sk-robot.com/api/mower/device-setting/{snr}",
+                    url=f"https://server.sk-robot.com/api/mower/device-setting/{snr}",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],
@@ -520,7 +520,7 @@ class AdanoRoboticmower:
             status_array = [
                 {
                     "path": "status",
-                    "url": "http://server.sk-robot.com/api/mower/device/getBysn?sn=$id",
+                    "url": "https://server.sk-robot.com/api/mower/device/getBysn?sn=$id",
                     "desc": "Status 1x update per hour",
                 },
             ]
@@ -577,7 +577,7 @@ class AdanoRoboticmower:
 
         try:
             response = requests.post(
-                url="http://server.sk-robot.com/api/auth/oauth/token",
+                url="https://server.sk-robot.com/api/auth/oauth/token",
                 headers={
                     "Accept-Language": self.language,
                     "Authorization": "Basic YXBwOmFwcA==",
@@ -738,7 +738,7 @@ class AdanoRoboticmower:
             try:
                 _LOGGER.debug(data)
                 response = requests.post(
-                    url="http://server.sk-robot.com/api/app_mower/device-schedule/setScheduling",
+                    url="https://server.sk-robot.com/api/app_mower/device-schedule/setScheduling",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],
@@ -826,7 +826,7 @@ class AdanoRoboticmower:
                 }
                 _LOGGER.debug(data)
                 response = requests.post(
-                    url="http://server.sk-robot.com/api/app_mower/device/setZones",
+                    url="https://server.sk-robot.com/api/app_mower/device/setZones",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],
@@ -890,7 +890,7 @@ class AdanoRoboticmower:
                 }
                 _LOGGER.debug(data)
                 response = requests.post(
-                    url="http://server.sk-robot.com/api/app_mower/device/setRain",
+                    url="https://server.sk-robot.com/api/app_mower/device/setRain",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],
@@ -952,7 +952,7 @@ class AdanoRoboticmower:
                     "mode": state,
                 }
                 response = requests.post(
-                    url="http://server.sk-robot.com/api/app_mower/device/setWorkStatus",
+                    url="https://server.sk-robot.com/api/app_mower/device/setWorkStatus",
                     headers={
                         "Accept-Language": self.language,
                         "Authorization": "bearer " + self.session["access_token"],

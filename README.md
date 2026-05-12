@@ -1,7 +1,9 @@
+# This integration is NOT getting any future updates.<br><br>Use the [Sunseeker integration](https://github.com/Sdahl1234/Sunseeker-lawn-mower) instead.
+<br>
+<br>
+  
 # Adano lawn mower integration for Home Assistant
 Home assistant integration from lawnmower using the robotic-mower connect APP.
-
-# If you have another brand of the SunSeeker robotic mower use this: https://github.com/Sdahl1234/Sunseeker-lawn-mower
 
 ## Tested models
   - Adano RM6
